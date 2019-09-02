@@ -21,7 +21,8 @@ type Server struct {
 	Config         *Config              // Configuration settings
 	Finder         gopifinder.Finder    // Finder client - used to find other devices
 	Uploader       Thingspeak           // Cloud uploader
-	room           *Room                // Room information
+	Room           *Room                // Room information
+	RoomService    *RoomService         // Room service
 	exit           chan struct{}        // Exit flag
 	shutdown       chan struct{}        // Shutdown complete flag
 	http           *http.Server         // HTTP server
@@ -74,27 +75,46 @@ func (s *Server) run() {
 		s.PortNo = 20515
 	}
 
+	s.logInfo("Using port no", s.PortNo)
+
 	s.Uploader.Srv = s
 	s.Finder.Logger = logger
 	s.Finder.VerboseLogging = service.Interactive()
+
+	s.logInfo("Loading Configuration")
 
 	// Get the configuration
 	if s.Config == nil {
 		s.Config = &Config{}
 	}
+	s.logInfo("1")
 	s.Config.ReadFromFile("config.json")
 
-	s.room.Door1Name = s.Config.Door1Name
-	s.room.Door2Name = s.Config.Door2Name
+	if s.RoomService == nil {
+		s.RoomService = &RoomService{}
+		s.RoomService.Srv = s
+	}
+
+	if s.Room == nil {
+		s.Room = &Room{}
+	}
+	s.Room.Door1Name = s.Config.Door1Name
+	s.Room.Door2Name = s.Config.Door2Name
+
+	s.logInfo("Configuration loaded successfully")
 
 	// Create a router
 	s.router = mux.NewRouter().StrictSlash(true)
 	s.router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./html/assets"))))
 
+	s.logInfo("Router created")
+
 	// Add the controllers
 	s.addController(new(RoomController))
 	s.addController(new(ConfigController))
 	s.addController(new(LogController))
+
+	s.logInfo("Controllers loaded")
 
 	// Create an HTTP server
 	s.http = &http.Server{

@@ -16,7 +16,7 @@ type RoomController struct {
 // AddController adds the controller routes to the router
 func (c *RoomController) AddController(router *mux.Router, s *Server) {
 	c.Srv = s
-	router.Methods("GET").Path("/room/telemetry").Name("GetTelemetry").
+	router.Methods("GET").Path("/room/get").Name("GetTelemetry").
 		Handler(Logger(c, http.HandlerFunc(c.handleGetTelemetry)))
 	router.Methods("POST").Path("/room/update").Name("UpdateTelemetry").
 		Handler(Logger(c, http.HandlerFunc(c.handleUpdate)))
@@ -26,13 +26,24 @@ func (c *RoomController) AddController(router *mux.Router, s *Server) {
 
 // handlerGetTelemetry will return the current telemetry for the room
 func (c *RoomController) handleGetTelemetry(w http.ResponseWriter, r *http.Request) {
-
+	if err := c.Srv.RoomService.UpdateTelemetry(); err != nil {
+		http.Error(w, "Error updating telemetry", http.StatusInternalServerError)
+	} else {
+		if err := c.Srv.Room.WriteTo(w); err != nil {
+			c.LogError("Error serializing telemetry.", err.Error)
+			http.Error(w, "Error serializing telemetry", http.StatusInternalServerError)
+		}
+	}
 }
 
 // handleUpdate is called from the python script monitoring the door switches.  This call tells
 // the server that the door status has changed
 func (c *RoomController) handleUpdate(w http.ResponseWriter, r *http.Request) {
-
+	if err := c.Srv.RoomService.UpdateDoorStatus(); err != nil {
+		http.Error(w, "Failed to update door status", http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
 }
 
 func (c *RoomController) handleOpenDoor(w http.ResponseWriter, r *http.Request) {
@@ -50,9 +61,12 @@ func (c *RoomController) handleOpenDoor(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	
-
-	w.WriteHeader(http.StatusNoContent)
+	err := c.Srv.RoomService.OpenDoor(doorNo)
+	if err != nil {
+		http.Error(w, "Failed", http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
 }
 
 // LogInfo is used to log information messages for this controller.
