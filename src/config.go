@@ -10,6 +10,11 @@ import (
 
 // Config holds the configuration required for the Service
 type Config struct {
+	Door1Name        string `json:"door1name"` // The name of door 1
+	Door2Name        string `json:"door2name"` // The name of door 2
+	Period           int    `json:"period"`    // Cloud update period (in minutes)
+	EnableThingspeak bool   `json:"enableThingspeak"`
+	ThingspeakID     string `json:"thingspeakID"`
 }
 
 // ReadFromFile will read the configuration settings from the specified file
