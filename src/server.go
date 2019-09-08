@@ -87,7 +87,6 @@ func (s *Server) run() {
 	if s.Config == nil {
 		s.Config = &Config{}
 	}
-	s.logInfo("1")
 	s.Config.ReadFromFile("config.json")
 
 	if s.RoomService == nil {
@@ -102,6 +101,8 @@ func (s *Server) run() {
 	s.Room.Door2Name = s.Config.Door2Name
 
 	s.logInfo("Configuration loaded successfully")
+
+	s.SendTelemetry()
 
 	// Create a router
 	s.router = mux.NewRouter().StrictSlash(true)
@@ -186,7 +187,7 @@ func (s *Server) RegisterService() {
 			s.logError("Error getting device info.", err.Error())
 		}
 		s.logDebug("RegisterService: Creating service")
-		sv := d.CreateService("SoilMonitor")
+		sv := d.CreateService("Garage")
 		sv.PortNo = s.PortNo
 
 		if sv.IPAddress == "" {
@@ -213,6 +214,18 @@ func (s *Server) RegisterService() {
 	}
 	s.logDebug("Completed service registration.")
 	s.isregistering = false
+}
+
+// SendTelemetry forces a send of telemetry outside of the schedule
+func (s *Server) SendTelemetry() {
+	s.logInfo("Sending telemetry")
+	if err := s.RoomService.UpdateDoorStatus(); err != nil {
+		s.logError("Error updating door status.", err.Error())
+	}
+	if err := s.RoomService.UpdateTelemetry(); err != nil {
+		s.logError("Error updating telemetry", err.Error())
+	}
+	s.Uploader.Run()
 }
 
 // logDebug logs a debug message to the logger

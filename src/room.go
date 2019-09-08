@@ -3,15 +3,17 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 // Room holds the information about the room being monitored
 type Room struct {
-	Door1Name   string  `json:"door1name"` // Name of garage door 1
-	Door1Open   bool    `json:"door1open"` // Whether door 1 is open
-	Door2Name   string  `json:"door2name"` // Name of garage door 2
-	Door2Open   bool    `json:"door2open"` // Whether door 2 is open
-	Temperature float64 `json:"temp"`      // Room temperature
+	Door1Name   string    `json:"door1name"`   // Name of garage door 1
+	Door1Closed bool      `json:"door1closed"` // Whether door 1 is closed
+	Door2Name   string    `json:"door2name"`   // Name of garage door 2
+	Door2Closed bool      `json:"door2closed"` // Whether door 2 is closed
+	Temperature float64   `json:"temp"`        // Room temperature
+	LastRead    time.Time `json:"lastread"`    // Time the values were last read
 }
 
 // WriteTo serializes the entity and writes it to the http response

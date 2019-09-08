@@ -9,6 +9,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	gopitools "github.com/brumawen/gopi-tools/src"
 )
@@ -36,6 +37,9 @@ func (r *RoomService) OpenDoor(doorNo int) error {
 
 // UpdateTelemetry will update all telemetry associated with the room
 func (r *RoomService) UpdateTelemetry() error {
+	// Update the last read time
+	r.Srv.Room.LastRead = time.Now().UTC()
+
 	// Get the temperature probe
 	tmp := gopitools.OneWireTemp{}
 	defer tmp.Close()
@@ -48,22 +52,20 @@ func (r *RoomService) UpdateTelemetry() error {
 		msg := "Error getting one-wire device list. " + err.Error() + "."
 		r.logError(msg)
 		return err
+	}
+	if len(devlst) == 0 {
+		msg := "No temperature device found. Cable could be disconnected."
+		r.logError(msg)
 	} else {
-		if len(devlst) == 0 {
-			msg := "No temperature device found. Cable could be disconnected."
+		r.logDebug("Reading temperature from ", devlst[0].Name)
+		tmp.ID = devlst[0].ID
+		temp, err := tmp.ReadTemp()
+		if err != nil {
+			msg := "Error reading temperature. " + err.Error() + "."
 			r.logError(msg)
-		} else {
-			r.logDebug("Reading temperature from ", devlst[0].Name)
-			tmp.ID = devlst[0].ID
-			temp, err := tmp.ReadTemp()
-			if err != nil {
-				msg := "Error reading temperature. " + err.Error() + "."
-				r.logError(msg)
-				return err
-			} else {
-				r.Srv.Room.Temperature = temp
-			}
+			return err
 		}
+		r.Srv.Room.Temperature = temp
 	}
 
 	return nil
@@ -83,12 +85,12 @@ func (r *RoomService) UpdateDoorStatus() error {
 		r.logError("Failed to read door1 state.", err)
 	} else {
 		r.logDebug("Read door1 state as", d1)
-		if strings.Contains(d1, "open") {
-			r.Srv.Room.Door1Open = true
-			r.logDebug("Door1 is open")
-		} else {
-			r.Srv.Room.Door1Open = false
+		if strings.Contains(d1, "closed") {
+			r.Srv.Room.Door1Closed = true
 			r.logDebug("Door1 is closed")
+		} else {
+			r.Srv.Room.Door1Closed = false
+			r.logDebug("Door1 is open")
 		}
 	}
 	if d2, err := r.readFileContents(path.Join(dp, "door2.state")); err != nil {
@@ -96,10 +98,10 @@ func (r *RoomService) UpdateDoorStatus() error {
 	} else {
 		r.logDebug("Read door2 state as", d2)
 		if strings.Contains(d2, "closed") {
-			r.Srv.Room.Door2Open = false
+			r.Srv.Room.Door2Closed = true
 			r.logDebug("Door2 is closed")
 		} else {
-			r.Srv.Room.Door2Open = true
+			r.Srv.Room.Door2Closed = false
 			r.logDebug("Door2 is open")
 		}
 	}

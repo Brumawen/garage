@@ -39,11 +39,8 @@ func (c *RoomController) handleGetTelemetry(w http.ResponseWriter, r *http.Reque
 // handleUpdate is called from the python script monitoring the door switches.  This call tells
 // the server that the door status has changed
 func (c *RoomController) handleUpdate(w http.ResponseWriter, r *http.Request) {
-	if err := c.Srv.RoomService.UpdateDoorStatus(); err != nil {
-		http.Error(w, "Failed to update door status", http.StatusInternalServerError)
-	} else {
-		w.WriteHeader(http.StatusNoContent)
-	}
+	c.Srv.SendTelemetry()
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (c *RoomController) handleOpenDoor(w http.ResponseWriter, r *http.Request) {
