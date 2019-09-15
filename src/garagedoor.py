@@ -47,10 +47,10 @@ def send_update_to_service(post):
     try:
         f = open(updFile,"w+")
         if switch.is_pressed:
-            logger.debug("Setting '" + updFile +"' to closed")
+            logger.debug("Setting '" + updFile + "' to closed")
             f.write("closed")
         else:
-            logger.debug("Setting '" + updFile +"' to open")
+            logger.debug("Setting '" + updFile + "' to open")
             f.write("open")
         f.close()
     except Exception as ex:
