@@ -49,14 +49,18 @@ func (t *Thingspeak) Run() {
 		if t.Srv.Room.Door2Closed {
 			door2Closed = 1
 		}
-		url := fmt.Sprintf("https://api.thingspeak.com/update?api_key=%s&field1=%t&field2=%t&field3=%t&field4=%f",
+		url := fmt.Sprintf("https://api.thingspeak.com/update?api_key=%s&field1=%d&field2=%d&field3=%d&field4=%f",
 			key,
 			door1Closed,
 			door2Closed,
 			1,
 			t.Srv.Room.Temperature)
-		if _, err := client.Get(url); err != nil {
+		if resp, err := client.Get(url); err != nil {
 			t.logError("Error sending telemetry to Thingspeak.", err.Error())
+		} else {
+			if resp.StatusCode != 200 {
+				t.logError("Error sending telemetry to Thingspeak. Status", resp.StatusCode, "returned.")
+			}
 		}
 	}
 

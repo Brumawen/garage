@@ -12,5 +12,5 @@ else:
         ledNo = 17
     led = LED(ledNo)
     led.off()
-    sleep(0.5)
+    sleep(0.25)
     led.off()
