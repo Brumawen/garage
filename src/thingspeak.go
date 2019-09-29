@@ -32,9 +32,14 @@ func (t *Thingspeak) Run() {
 		t.lastValues = &Room{}
 		mustUpload = true
 	} else {
-		// Check for changes
-		if t.lastValues.Door1Closed != t.Srv.Room.Door1Closed || t.lastValues.Door2Closed != t.Srv.Room.Door2Closed || t.lastValues.Temperature != t.Srv.Room.Temperature {
+		if time.Since(t.LastUpdate) >= time.Duration(t.Srv.Config.Period)*time.Minute {
+			// Time since last update exceeds the required
 			mustUpload = true
+		} else {
+			// Check for changes
+			if t.lastValues.Door1Closed != t.Srv.Room.Door1Closed || t.lastValues.Door2Closed != t.Srv.Room.Door2Closed || t.lastValues.Temperature != t.Srv.Room.Temperature {
+				mustUpload = true
+			}
 		}
 	}
 
@@ -62,15 +67,21 @@ func (t *Thingspeak) Run() {
 				t.logError("Error sending telemetry to Thingspeak. Status", resp.StatusCode, "returned.")
 			}
 		}
+
+		// Update last values
+		t.lastValues.Door1Name = t.Srv.Room.Door1Name
+		t.lastValues.Door1Closed = t.Srv.Room.Door1Closed
+		t.lastValues.Door2Name = t.Srv.Room.Door2Name
+		t.lastValues.Door2Closed = t.Srv.Room.Door2Closed
+		t.lastValues.Temperature = t.Srv.Room.Temperature
+		t.lastValues.LastRead = t.Srv.Room.LastRead
+
+		t.LastUpdate = time.Now()
+
+		// Send MQTT Telemetry
+		t.Srv.MqttClient.SendTelemetry()
 	}
 
-	// Update last values
-	t.lastValues.Door1Name = t.Srv.Room.Door1Name
-	t.lastValues.Door1Closed = t.Srv.Room.Door1Closed
-	t.lastValues.Door2Name = t.Srv.Room.Door2Name
-	t.lastValues.Door2Closed = t.Srv.Room.Door2Closed
-	t.lastValues.Temperature = t.Srv.Room.Temperature
-	t.lastValues.LastRead = t.Srv.Room.LastRead
 }
 
 // logInfo logs an information message to the logger

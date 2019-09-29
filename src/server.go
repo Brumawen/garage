@@ -21,6 +21,7 @@ type Server struct {
 	Config         *Config              // Configuration settings
 	Finder         gopifinder.Finder    // Finder client - used to find other devices
 	Uploader       Thingspeak           // Cloud uploader
+	MqttClient     *Mqtt                // MQTT client
 	Room           *Room                // Room information
 	RoomService    *RoomService         // Room service
 	exit           chan struct{}        // Exit flag
@@ -100,9 +101,17 @@ func (s *Server) run() {
 	s.Room.Door1Name = s.Config.Door1Name
 	s.Room.Door2Name = s.Config.Door2Name
 
+	if s.MqttClient == nil {
+		s.MqttClient = &Mqtt{}
+	}
+
 	s.logInfo("Configuration loaded successfully")
 
-	s.SendTelemetry()
+	// Send initial telemetry
+	go func() {
+		s.MqttClient.Initialize()
+		s.SendTelemetry()
+	}()
 
 	// Create a router
 	s.router = mux.NewRouter().StrictSlash(true)
@@ -163,6 +172,7 @@ func (s *Server) startSchedule() {
 	}
 	s.cw = clockwerk.New()
 	s.cw.Every(time.Duration(s.Config.Period) * time.Minute).Do(&s.Uploader)
+
 	s.cw.Start()
 
 	s.logDebug("Schedule set.")
