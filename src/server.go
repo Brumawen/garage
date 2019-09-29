@@ -103,6 +103,7 @@ func (s *Server) run() {
 
 	if s.MqttClient == nil {
 		s.MqttClient = &Mqtt{}
+		s.MqttClient.Srv = s
 	}
 
 	s.logInfo("Configuration loaded successfully")
