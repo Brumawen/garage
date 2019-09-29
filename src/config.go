@@ -10,15 +10,15 @@ import (
 
 // Config holds the configuration required for the Service
 type Config struct {
-	Door1Name        string `json:"door1Name"` // The name of door 1
-	Door2Name        string `json:"door2Name"` // The name of door 2
-	Period           int    `json:"period"`    // Cloud update period (in minutes)
-	EnableThingspeak bool   `json:"enableThingspeak"`
-	ThingspeakID     string `json:"thingspeakID"`
-	EnableMqtt       bool   `json:"enableMqtt"`
-	MqttHost         string `json:"mqttHost"`
-	MqttUsername     string `json:"mqttUsername"`
-	MqttPassword     string `json:"mqttPassword"`
+	Door1Name        string `json:"door1Name"`        // The name of door 1
+	Door2Name        string `json:"door2Name"`        // The name of door 2
+	Period           int    `json:"period"`           // Cloud update period (in minutes)
+	EnableThingspeak bool   `json:"enableThingspeak"` // Enable Thingspeak integration
+	ThingspeakID     string `json:"thingspeakID"`     // Thingspeak ID
+	EnableMqtt       bool   `json:"enableMqtt"`       // Enable MQTT integration
+	MqttHost         string `json:"mqttHost"`         // MQTT Host
+	MqttUsername     string `json:"mqttUsername"`     // MQTT Username
+	MqttPassword     string `json:"mqttPassword"`     // MQTT password
 }
 
 // ReadFromFile will read the configuration settings from the specified file
