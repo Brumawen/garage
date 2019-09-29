@@ -85,7 +85,7 @@ func (m *Mqtt) SendTelemetry() error {
 	}
 
 	// Temperature
-	token = client.Publish("home/garage/temperature", byte(0), true, m.Srv.Room.Temperature)
+	token = client.Publish("home/garage/temperature", byte(0), true, fmt.Sprintf("%f", m.Srv.Room.Temperature))
 	if token.Wait() && token.Error() != nil {
 		m.logError("Error sending temperature state to MQTT Broker.", token.Error())
 		client.Disconnect(250)
