@@ -50,7 +50,7 @@ func (m *Mqtt) SendTelemetry() error {
 	opts := MQTT.NewClientOptions()
 	opts.AddBroker(m.Srv.Config.MqttHost)
 	opts.SetUsername(m.Srv.Config.MqttUsername)
-	opts.SetPassword(m.Srv.Config.MqttUsername)
+	opts.SetPassword(m.Srv.Config.MqttPassword)
 
 	client := MQTT.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
@@ -104,11 +104,11 @@ func (m *Mqtt) subscribe() {
 // logInfo logs an information message to the logger
 func (m *Mqtt) logInfo(v ...interface{}) {
 	a := fmt.Sprint(v)
-	logger.Info("Thingspeak: [Inf] ", a[1:len(a)-1])
+	logger.Info("Mqtt: [Inf] ", a[1:len(a)-1])
 }
 
 // logError logs an error message to the logger
 func (m *Mqtt) logError(v ...interface{}) {
 	a := fmt.Sprint(v)
-	logger.Error("Thingspeak [Err] ", a[1:len(a)-1])
+	logger.Error("Mqtt [Err] ", a[1:len(a)-1])
 }
