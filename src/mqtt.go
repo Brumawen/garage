@@ -51,13 +51,14 @@ func (m *Mqtt) Initialize() error {
 		m.logError("Disconnected from MQTT Broker.", err.Error())
 	})
 	opts.SetOnConnectHandler(func(client MQTT.Client) {
-		m.logInfo("Connected to the MQTT Broker.")
+		m.logInfo("Connected to the MQTT Broker. Subscribing to topics.")
 		if token := client.Subscribe("home/garage/door1/set", byte(1), nil); token.Wait() && token.Error() != nil {
 			panic(token.Error())
 		}
 		if token := client.Subscribe("home/garage/door2/set", byte(1), nil); token.Wait() && token.Error() != nil {
 			panic(token.Error())
 		}
+		m.logInfo("Subscription complete.")
 	})
 	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
 		m.logInfo("Command received.", msg.Topic(), string(msg.Payload()))
@@ -76,8 +77,8 @@ func (m *Mqtt) Initialize() error {
 		}
 	})
 
-	client := MQTT.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
+	m.client = MQTT.NewClient(opts)
+	if token := m.client.Connect(); token.Wait() && token.Error() != nil {
 		m.logError("Error connecting to MQTT Broker.", token.Error())
 		return token.Error()
 	}
@@ -104,6 +105,7 @@ func (m *Mqtt) SendTelemetry() error {
 	if m.Srv.Room.Door1Closed {
 		doorState = "ON"
 	}
+	m.logInfo("Publishing door1 state")
 	token := m.client.Publish("home/garage/door1", byte(0), true, doorState)
 	if token.Wait() && token.Error() != nil {
 		m.logError("Error sending door 1 state to MQTT Broker.", token.Error())
@@ -115,6 +117,7 @@ func (m *Mqtt) SendTelemetry() error {
 	if m.Srv.Room.Door2Closed {
 		doorState = "ON"
 	}
+	m.logInfo("Publishing door2 state")
 	token = m.client.Publish("home/garage/door2", byte(0), true, doorState)
 	if token.Wait() && token.Error() != nil {
 		m.logError("Error sending door 2 state to MQTT Broker.", token.Error())
@@ -122,6 +125,7 @@ func (m *Mqtt) SendTelemetry() error {
 	}
 
 	// Temperature
+	m.logInfo("Publishing temperature")
 	token = m.client.Publish("home/garage/temperature", byte(0), true, fmt.Sprintf("%.1f", m.Srv.Room.Temperature))
 	if token.Wait() && token.Error() != nil {
 		m.logError("Error sending temperature state to MQTT Broker.", token.Error())
