@@ -54,10 +54,6 @@ func (m *Mqtt) Initialize() error {
 	})
 	opts.SetOnConnectHandler(func(client MQTT.Client) {
 		m.logInfo("Connected to the MQTT Broker. Subscribing to topics.")
-		if m.ignoreCommands {
-			m.logInfo("Commands are currently being ignored")
-			return
-		}
 		if token := client.Subscribe("home/garage/door1/set", byte(1), nil); token.Wait() && token.Error() != nil {
 			panic(token.Error())
 		}
@@ -68,6 +64,10 @@ func (m *Mqtt) Initialize() error {
 	})
 	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
 		m.logInfo("Command received.", msg.Topic(), string(msg.Payload()))
+		if m.ignoreCommands {
+			m.logInfo("Commands are currently being ignored")
+			return
+		}
 		if msg.Topic() == "home/garage/door1/set" {
 			pl := string(msg.Payload())
 			if pl == "ON" || pl == "OFF" {
