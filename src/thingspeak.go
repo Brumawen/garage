@@ -8,10 +8,10 @@ import (
 
 // Thingspeak uploads the room telemetry to the Thingspeak server in the cloud
 type Thingspeak struct {
-	Srv        *Server   // Current Server
-	LastUpdate time.Time // Last time the update was run
-	IsRunning  bool      // Is this currently running?
-	lastValues *Room     // Last values uploaded for Room
+	Srv               *Server   // Current Server
+	LastUpdateAttempt time.Time // Last time an update was attempted
+	LastUpdate        time.Time // Last time the update was run
+	lastValues        *Room     // Last values uploaded for Room
 }
 
 // Run is called from the scheduler (ClockWerk). This function will get the latest measurements
@@ -45,6 +45,7 @@ func (t *Thingspeak) Run() {
 
 	if mustUpload {
 		t.logInfo("Uploading telemetry")
+		t.LastUpdateAttempt = time.Now()
 		client := http.Client{}
 		door1Closed := 0
 		if t.Srv.Room.Door1Closed {
@@ -77,11 +78,10 @@ func (t *Thingspeak) Run() {
 		t.lastValues.LastRead = t.Srv.Room.LastRead
 
 		t.LastUpdate = time.Now()
-
-		// Send MQTT Telemetry
-		t.Srv.MqttClient.SendTelemetry()
 	}
 
+	// Send MQTT Telemetry
+	t.Srv.MqttClient.SendTelemetry()
 }
 
 // logInfo logs an information message to the logger

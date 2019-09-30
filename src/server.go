@@ -159,6 +159,9 @@ func (s *Server) run() {
 	// Shutdown the HTTP server
 	s.http.Shutdown(nil)
 
+	// Shutdown the MQTT client
+	s.MqttClient.Close()
+
 	s.logInfo("Shutdown complete")
 	close(s.shutdown)
 }
