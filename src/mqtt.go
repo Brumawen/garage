@@ -52,10 +52,10 @@ func (m *Mqtt) Initialize() error {
 	})
 	opts.SetOnConnectHandler(func(client MQTT.Client) {
 		m.logInfo("Connected to the MQTT Broker.")
-		if token := client.Subscribe("home/garage/door1/command", byte(1), nil); token.Wait() && token.Error() != nil {
+		if token := client.Subscribe("home/garage/door1/set", byte(1), nil); token.Wait() && token.Error() != nil {
 			panic(token.Error())
 		}
-		if token := client.Subscribe("home/garage/door2/command", byte(1), nil); token.Wait() && token.Error() != nil {
+		if token := client.Subscribe("home/garage/door2/set", byte(1), nil); token.Wait() && token.Error() != nil {
 			panic(token.Error())
 		}
 	})
