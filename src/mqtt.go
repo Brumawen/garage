@@ -15,6 +15,7 @@ type Mqtt struct {
 	LastUpdateAttempt time.Time   // Last time an update was attempted
 	LastUpdate        time.Time   // Last time an update was published
 	client            MQTT.Client // MQTT client
+	ignoreCommands    bool        // Signals that commands must be ignored
 }
 
 // Initialize initializes the MQTT client
@@ -41,6 +42,7 @@ func (m *Mqtt) Initialize() error {
 
 	// Connect and send meta information
 	m.logInfo("Connecting to the MQTT Broker.")
+	m.ignoreCommands = true
 
 	opts := MQTT.NewClientOptions()
 	opts.AddBroker(m.Srv.Config.MqttHost)
@@ -52,6 +54,10 @@ func (m *Mqtt) Initialize() error {
 	})
 	opts.SetOnConnectHandler(func(client MQTT.Client) {
 		m.logInfo("Connected to the MQTT Broker. Subscribing to topics.")
+		if m.ignoreCommands {
+			m.logInfo("Commands are currently being ignored")
+			return
+		}
 		if token := client.Subscribe("home/garage/door1/set", byte(1), nil); token.Wait() && token.Error() != nil {
 			panic(token.Error())
 		}
@@ -62,13 +68,13 @@ func (m *Mqtt) Initialize() error {
 	})
 	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
 		m.logInfo("Command received.", msg.Topic(), string(msg.Payload()))
-		if msg.Topic() == "home/garage/door1/command" {
+		if msg.Topic() == "home/garage/door1/set" {
 			pl := string(msg.Payload())
 			if pl == "ON" || pl == "OFF" {
 				m.logInfo("Cycling door 1")
 				m.Srv.RoomService.OpenDoor(1)
 			}
-		} else if msg.Topic() == "home/garage/door2/command" {
+		} else if msg.Topic() == "home/garage/door2/set" {
 			pl := string(msg.Payload())
 			if pl == "ON" || pl == "OFF" {
 				m.logInfo("Cycling door 2")
@@ -133,13 +139,9 @@ func (m *Mqtt) SendTelemetry() error {
 	}
 
 	m.LastUpdate = time.Now()
+	m.ignoreCommands = false
 
 	return nil
-}
-
-// subscribe listens for commands from the MQTT broker
-func (m *Mqtt) subscribe() {
-
 }
 
 // logInfo logs an information message to the logger
