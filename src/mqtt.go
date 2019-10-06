@@ -70,15 +70,35 @@ func (m *Mqtt) Initialize() error {
 		}
 		if msg.Topic() == "home/garage/door1/set" {
 			pl := string(msg.Payload())
-			if pl == "ON" || pl == "OFF" {
-				m.logInfo("Cycling door 1")
-				m.Srv.RoomService.OpenDoor(1)
+			m.logInfo("Received Door 1 Set command with payload of:", pl)
+			if pl == "ON" {
+				// Check if the door is open and close it
+				if !m.Srv.Room.Door1Closed {
+					m.logInfo("Closing door 1")
+					m.Srv.RoomService.OpenDoor(1)
+				}
+			} else if pl == "OFF" {
+				// Check if the door is closed an open it
+				if m.Srv.Room.Door1Closed {
+					m.logInfo("Opening door 1")
+					m.Srv.RoomService.OpenDoor(1)
+				}
 			}
 		} else if msg.Topic() == "home/garage/door2/set" {
 			pl := string(msg.Payload())
-			if pl == "ON" || pl == "OFF" {
-				m.logInfo("Cycling door 2")
-				m.Srv.RoomService.OpenDoor(2)
+			m.logInfo("Received Door 2 Set command with payload of:", pl)
+			if pl == "ON" {
+				// Check if the door is open and close it
+				if !m.Srv.Room.Door2Closed {
+					m.logInfo("Closing door 2")
+					m.Srv.RoomService.OpenDoor(2)
+				}
+			} else if pl == "OFF" {
+				// Check if the door is closed an open it
+				if m.Srv.Room.Door2Closed {
+					m.logInfo("Opening door 2")
+					m.Srv.RoomService.OpenDoor(2)
+				}
 			}
 		}
 	})
