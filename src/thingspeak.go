@@ -17,14 +17,22 @@ type Thingspeak struct {
 // Run is called from the scheduler (ClockWerk). This function will get the latest measurements
 // and send the measurements to Thingspeak
 func (t *Thingspeak) Run() {
+	if err := t.Srv.RoomService.UpdateTelemetry(); err != nil {
+		t.logError("Error updating telemetry", err.Error())
+	}
+
+	uploadThingspeak := true
+	key := ""
 	if !t.Srv.Config.EnableThingspeak {
 		t.logInfo("Thingspeak has been disabled")
-		return
+		uploadThingspeak = false
 	}
-	key := t.Srv.Config.ThingspeakID
-	if key == "" {
-		t.logError("Thingspeak API ID has not been configured")
-		return
+	if uploadThingspeak {
+		key = t.Srv.Config.ThingspeakID
+		if key == "" {
+			t.logError("Thingspeak API ID has not been configured")
+			uploadThingspeak = false
+		}
 	}
 
 	mustUpload := false
@@ -43,7 +51,7 @@ func (t *Thingspeak) Run() {
 		}
 	}
 
-	if mustUpload {
+	if mustUpload && uploadThingspeak {
 		t.logInfo("Uploading telemetry")
 		t.LastUpdateAttempt = time.Now()
 		client := http.Client{}

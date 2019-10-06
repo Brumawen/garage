@@ -236,9 +236,6 @@ func (s *Server) SendTelemetry() {
 	if err := s.RoomService.UpdateDoorStatus(); err != nil {
 		s.logError("Error updating door status.", err.Error())
 	}
-	if err := s.RoomService.UpdateTelemetry(); err != nil {
-		s.logError("Error updating telemetry", err.Error())
-	}
 	s.Uploader.Run()
 }
 
