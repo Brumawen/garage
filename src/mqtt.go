@@ -126,6 +126,14 @@ func (m *Mqtt) SendTelemetry() error {
 	m.logInfo("Publishing telemetry to MQTT")
 	m.LastUpdateAttempt = time.Now()
 
+	if !m.client.IsConnected() {
+		m.logInfo("Reconnecting to MQTT broker")
+		if token := m.client.Connect(); token.Wait() && token.Error() != nil {
+			m.logError("Error connecting to MQTT Broker.", token.Error())
+			return token.Error()
+		}
+	}
+
 	// DOOR 1
 	doorState := "OFF"
 	if m.Srv.Room.Door1Closed {
