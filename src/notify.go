@@ -25,53 +25,79 @@ func (n *NotifyService) Run() {
 		config.DoorAlarmPeriod = 5
 	}
 
+	n.logDebug("Checking for open doors")
+
 	room := n.Srv.Room
 
 	// Check how long Door1 has been open
-	if room.Door1Closed {
-		if n.WasDoor1Open {
-			if err := n.sendMessage(fmt.Sprintf("%s's door is now closed.", room.Door1Name)); err != nil {
-				n.logError("Error notifying that door 1 is now closed.", err.Error())
+	if n.Srv.Config.EnableDoor1 {
+		if room.Door1Closed {
+			n.logDebug("Door1 is closed")
+			if n.WasDoor1Open {
+				if err := n.sendMessage(fmt.Sprintf("%s's door is now closed.", room.Door1Name)); err != nil {
+					n.logError("Error notifying that door 1 is now closed.", err.Error())
+				}
+				n.WasDoor1Open = false
 			}
-			n.WasDoor1Open = false
+		} else {
+			dur := time.Since(room.Door1StatusTime)
+			n.logDebug("Door 1 open for ", int(dur.Minutes()))
+			if dur.Minutes() >= float64(config.DoorAlarmPeriod) {
+				if err := n.sendMessage(fmt.Sprintf("%s's door has been open for %d minutes.", room.Door1Name, int(dur.Minutes()))); err != nil {
+					n.logError("Error notifying that door 1 is open.", err.Error())
+				}
+				n.WasDoor1Open = true
+			}
 		}
 	} else {
-		dur := time.Since(room.Door1StatusTime)
-		if dur.Minutes() >= float64(config.DoorAlarmPeriod) {
-			if err := n.sendMessage(fmt.Sprintf("%s's door has been open for %d minutes.", room.Door1Name, int(dur.Minutes()))); err != nil {
-				n.logError("Error notifying that door 1 is open.", err.Error())
-			}
-			n.WasDoor1Open = true
-		}
+		n.logDebug("Door1 is disabled")
 	}
 
 	// Check how long Door2 has been open
-	if room.Door2Closed {
-		if n.WasDoor2Open {
-			if err := n.sendMessage(fmt.Sprintf("%s's door is now closed.", room.Door2Name)); err != nil {
-				n.logError("Error notifying that door 2 is now closed.", err.Error())
+	if n.Srv.Config.EnableDoor2 {
+		if room.Door2Closed {
+			n.logDebug("Door2 is closed")
+			if n.WasDoor2Open {
+				if err := n.sendMessage(fmt.Sprintf("%s's door is now closed.", room.Door2Name)); err != nil {
+					n.logError("Error notifying that door 2 is now closed.", err.Error())
+				}
+				n.WasDoor2Open = false
 			}
-			n.WasDoor2Open = false
+		} else {
+			dur := time.Since(room.Door2StatusTime)
+			n.logDebug("Door 2 open for ", int(dur.Minutes()))
+			if dur.Minutes() >= float64(config.DoorAlarmPeriod) {
+				if err := n.sendMessage(fmt.Sprintf("%s's door has been open for %d minutes.", room.Door2Name, int(dur.Minutes()))); err != nil {
+					n.logError("Error notifying that door 2 is open.", err.Error())
+				}
+				n.WasDoor2Open = true
+			}
 		}
 	} else {
-		dur := time.Since(room.Door2StatusTime)
-		if dur.Minutes() >= float64(config.DoorAlarmPeriod) {
-			if err := n.sendMessage(fmt.Sprintf("%s's door has been open for %d minutes.", room.Door2Name, int(dur.Minutes()))); err != nil {
-				n.logError("Error notifying that door 2 is open.", err.Error())
-			}
-			n.WasDoor2Open = true
-		}
+		n.logDebug("Door2 is disabled")
 	}
 }
 
 // sendMessage sends the specified message to telegram
 func (n *NotifyService) sendMessage(m string) error {
-	c := telegram.Client{}
+	c := telegram.Client{
+		Logger:         logger,
+		VerboseLogging: n.Srv.VerboseLogging,
+	}
+
 	return c.SendMessage(m)
+}
+
+// logDebug logs a debug message to the logger
+func (n *NotifyService) logDebug(v ...interface{}) {
+	if n.Srv.VerboseLogging {
+		a := fmt.Sprint(v...)
+		logger.Info("Notify: [Dbg] ", a)
+	}
 }
 
 // logError logs an error message to the logger
 func (n *NotifyService) logError(v ...interface{}) {
 	a := fmt.Sprint(v...)
-	logger.Error("Notify [Err] ", a)
+	logger.Error("Notify: [Err] ", a)
 }

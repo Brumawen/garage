@@ -63,42 +63,50 @@ func (m *Mqtt) Initialize() error {
 		m.logInfo("Subscription complete.")
 	})
 	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
-		m.logInfo("Command received.", msg.Topic(), string(msg.Payload()))
+		m.logInfo("Command received. ", msg.Topic(), string(msg.Payload()))
 		if m.ignoreCommands {
 			m.logInfo("Commands are currently being ignored")
 			return
 		}
 		if msg.Topic() == "home/garage/door1/set" {
-			pl := string(msg.Payload())
-			m.logInfo("Received Door 1 Set command with payload of:", pl)
-			if pl == "ON" {
-				// Check if the door is open and close it
-				if !m.Srv.Room.Door1Closed {
-					m.logInfo("Closing door 1")
-					m.Srv.RoomService.OpenDoor(1)
+			if m.Srv.Config.EnableDoor1 {
+				pl := string(msg.Payload())
+				m.logInfo("Received Door 1 Set command with payload of: ", pl)
+				if pl == "ON" {
+					// Check if the door is open and close it
+					if !m.Srv.Room.Door1Closed {
+						m.logInfo("Closing door 1")
+						m.Srv.RoomService.OpenDoor(1)
+					}
+				} else if pl == "OFF" {
+					// Check if the door is closed an open it
+					if m.Srv.Room.Door1Closed {
+						m.logInfo("Opening door 1")
+						m.Srv.RoomService.OpenDoor(1)
+					}
 				}
-			} else if pl == "OFF" {
-				// Check if the door is closed an open it
-				if m.Srv.Room.Door1Closed {
-					m.logInfo("Opening door 1")
-					m.Srv.RoomService.OpenDoor(1)
-				}
+			} else {
+				m.logInfo("Door1 is disabled")
 			}
 		} else if msg.Topic() == "home/garage/door2/set" {
-			pl := string(msg.Payload())
-			m.logInfo("Received Door 2 Set command with payload of:", pl)
-			if pl == "ON" {
-				// Check if the door is open and close it
-				if !m.Srv.Room.Door2Closed {
-					m.logInfo("Closing door 2")
-					m.Srv.RoomService.OpenDoor(2)
+			if m.Srv.Config.EnableDoor2 {
+				pl := string(msg.Payload())
+				m.logInfo("Received Door 2 Set command with payload of: ", pl)
+				if pl == "ON" {
+					// Check if the door is open and close it
+					if !m.Srv.Room.Door2Closed {
+						m.logInfo("Closing door 2")
+						m.Srv.RoomService.OpenDoor(2)
+					}
+				} else if pl == "OFF" {
+					// Check if the door is closed an open it
+					if m.Srv.Room.Door2Closed {
+						m.logInfo("Opening door 2")
+						m.Srv.RoomService.OpenDoor(2)
+					}
 				}
-			} else if pl == "OFF" {
-				// Check if the door is closed an open it
-				if m.Srv.Room.Door2Closed {
-					m.logInfo("Opening door 2")
-					m.Srv.RoomService.OpenDoor(2)
-				}
+			} else {
+				m.logInfo("Door2 is disabled")
 			}
 		}
 	})
@@ -135,32 +143,40 @@ func (m *Mqtt) SendTelemetry() error {
 	}
 
 	// DOOR 1
-	doorState := "OFF"
-	if m.Srv.Room.Door1Closed {
-		doorState = "ON"
-	}
-	m.logInfo("Publishing door1 state")
-	token := m.client.Publish("home/garage/door1", byte(0), true, doorState)
-	if token.Wait() && token.Error() != nil {
-		m.logError("Error sending door 1 state to MQTT Broker.", token.Error())
-		return token.Error()
+	if m.Srv.Config.EnableDoor1 {
+		doorState := "OFF"
+		if m.Srv.Room.Door1Closed {
+			doorState = "ON"
+		}
+		m.logInfo("Publishing door1 state. ", doorState)
+		token := m.client.Publish("home/garage/door1", byte(0), true, doorState)
+		if token.Wait() && token.Error() != nil {
+			m.logError("Error sending door 1 state to MQTT Broker. ", token.Error())
+			return token.Error()
+		}
+	} else {
+		m.logInfo("Publishing door1 state. Door1 is disabled.")
 	}
 
 	// DOOR 2
-	doorState = "OFF"
-	if m.Srv.Room.Door2Closed {
-		doorState = "ON"
-	}
-	m.logInfo("Publishing door2 state")
-	token = m.client.Publish("home/garage/door2", byte(0), true, doorState)
-	if token.Wait() && token.Error() != nil {
-		m.logError("Error sending door 2 state to MQTT Broker.", token.Error())
-		return token.Error()
+	if m.Srv.Config.EnableDoor2 {
+		doorState := "OFF"
+		if m.Srv.Room.Door2Closed {
+			doorState = "ON"
+		}
+		m.logInfo("Publishing door2 state. ", doorState)
+		token := m.client.Publish("home/garage/door2", byte(0), true, doorState)
+		if token.Wait() && token.Error() != nil {
+			m.logError("Error sending door 2 state to MQTT Broker. ", token.Error())
+			return token.Error()
+		}
+	} else {
+		m.logInfo("Publishing door2 state. Door2 is disabled.")
 	}
 
 	// Temperature
-	m.logInfo("Publishing temperature")
-	token = m.client.Publish("home/garage/temperature", byte(0), true, fmt.Sprintf("%.1f", m.Srv.Room.Temperature))
+	m.logInfo("Publishing temperature. ", fmt.Sprintf("%.1f", m.Srv.Room.Temperature))
+	token := m.client.Publish("home/garage/temperature", byte(0), true, fmt.Sprintf("%.1f", m.Srv.Room.Temperature))
 	if token.Wait() && token.Error() != nil {
 		m.logError("Error sending temperature state to MQTT Broker.", token.Error())
 		return token.Error()
@@ -181,5 +197,5 @@ func (m *Mqtt) logInfo(v ...interface{}) {
 // logError logs an error message to the logger
 func (m *Mqtt) logError(v ...interface{}) {
 	a := fmt.Sprint(v...)
-	logger.Error("Mqtt [Err] ", a)
+	logger.Error("Mqtt: [Err] ", a)
 }

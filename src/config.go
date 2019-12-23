@@ -10,7 +10,9 @@ import (
 
 // Config holds the configuration required for the Service
 type Config struct {
+	EnableDoor1      bool   `json:"enableDoor1"`      // Enable door 1
 	Door1Name        string `json:"door1Name"`        // The name of door 1
+	EnableDoor2      bool   `json:"enableDoor2"`      // Enable door 2
 	Door2Name        string `json:"door2Name"`        // The name of door 2
 	Period           int    `json:"period"`           // Cloud update period (in minutes)
 	EnableThingspeak bool   `json:"enableThingspeak"` // Enable Thingspeak integration

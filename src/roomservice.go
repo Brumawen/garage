@@ -82,43 +82,55 @@ func (r *RoomService) UpdateDoorStatus() error {
 	dp := path.Join(wd, "data")
 
 	// Get Door 1 State
-	if d1, err := r.readFileContents(path.Join(dp, "door1.state")); err != nil {
-		r.logError("Failed to read door1 state.", err)
-	} else {
-		r.logDebug("Read door1 state as", d1)
-		if strings.Contains(d1, "closed") {
-			if !r.Srv.Room.Door1Closed {
-				r.Srv.Room.Door1Closed = true
-				r.Srv.Room.Door1StatusTime = time.Now()
-			}
-			r.logDebug("Door1 is closed")
+	if r.Srv.Config.EnableDoor1 {
+		if d1, err := r.readFileContents(path.Join(dp, "door1.state")); err != nil {
+			r.logError("Failed to read door1 state. ", err)
 		} else {
-			if r.Srv.Room.Door1Closed {
-				r.Srv.Room.Door1Closed = false
-				r.Srv.Room.Door1StatusTime = time.Now()
+			r.logDebug("Read door1 state as ", d1)
+			if strings.Contains(d1, "closed") {
+				if !r.Srv.Room.Door1Closed {
+					r.Srv.Room.Door1Closed = true
+					r.Srv.Room.Door1StatusTime = time.Now()
+				}
+				r.logDebug("Door1 is closed")
+			} else {
+				if r.Srv.Room.Door1Closed {
+					r.Srv.Room.Door1Closed = false
+					r.Srv.Room.Door1StatusTime = time.Now()
+				}
+				r.logInfo("Door1 is open")
 			}
-			r.logDebug("Door1 is open")
 		}
+	} else {
+		r.Srv.Room.Door1Closed = true
+		r.Srv.Room.Door1StatusTime = time.Now()
+		r.logInfo("Door1 is disabled")
 	}
 
 	// Get Door 2 State
-	if d2, err := r.readFileContents(path.Join(dp, "door2.state")); err != nil {
-		r.logError("Failed to read door2 state.", err)
-	} else {
-		r.logDebug("Read door2 state as", d2)
-		if strings.Contains(d2, "closed") {
-			if !r.Srv.Room.Door2Closed {
-				r.Srv.Room.Door2Closed = true
-				r.Srv.Room.Door2StatusTime = time.Now()
-			}
-			r.logDebug("Door2 is closed")
+	if r.Srv.Config.EnableDoor2 {
+		if d2, err := r.readFileContents(path.Join(dp, "door2.state")); err != nil {
+			r.logError("Failed to read door2 state. ", err)
 		} else {
-			if r.Srv.Room.Door2Closed {
-				r.Srv.Room.Door2Closed = false
-				r.Srv.Room.Door2StatusTime = time.Now()
+			r.logDebug("Read door2 state as ", d2)
+			if strings.Contains(d2, "closed") {
+				if !r.Srv.Room.Door2Closed {
+					r.Srv.Room.Door2Closed = true
+					r.Srv.Room.Door2StatusTime = time.Now()
+				}
+				r.logDebug("Door2 is closed")
+			} else {
+				if r.Srv.Room.Door2Closed {
+					r.Srv.Room.Door2Closed = false
+					r.Srv.Room.Door2StatusTime = time.Now()
+				}
+				r.logDebug("Door2 is open")
 			}
-			r.logDebug("Door2 is open")
 		}
+	} else {
+		r.Srv.Room.Door2Closed = true
+		r.Srv.Room.Door2StatusTime = time.Now()
+		r.logInfo("Door2 is disabled")
 	}
 	return nil
 }
@@ -141,7 +153,7 @@ func (r *RoomService) readFileContents(filePath string) (dir string, err error) 
 func (r *RoomService) logDebug(v ...interface{}) {
 	if r.Srv.VerboseLogging {
 		a := fmt.Sprint(v...)
-		logger.Info("Server: [Dbg] ", a)
+		logger.Info("RoomService: [Dbg] ", a)
 	}
 }
 
@@ -154,5 +166,5 @@ func (r *RoomService) logInfo(v ...interface{}) {
 // logError logs an error message to the logger
 func (r *RoomService) logError(v ...interface{}) {
 	a := fmt.Sprint(v...)
-	logger.Error("Room [Err] ", a)
+	logger.Error("RoomService: [Err] ", a)
 }

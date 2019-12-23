@@ -101,5 +101,5 @@ func (t *Thingspeak) logInfo(v ...interface{}) {
 // logError logs an error message to the logger
 func (t *Thingspeak) logError(v ...interface{}) {
 	a := fmt.Sprint(v...)
-	logger.Error("Thingspeak [Err] ", a)
+	logger.Error("Thingspeak: [Err] ", a)
 }
