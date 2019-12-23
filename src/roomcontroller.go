@@ -30,7 +30,7 @@ func (c *RoomController) handleGetTelemetry(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "Error updating telemetry", http.StatusInternalServerError)
 	} else {
 		if err := c.Srv.Room.WriteTo(w); err != nil {
-			c.LogError("Error serializing telemetry.", err.Error())
+			c.LogError("Error serializing telemetry. ", err.Error())
 			http.Error(w, "Error serializing telemetry", http.StatusInternalServerError)
 		}
 	}

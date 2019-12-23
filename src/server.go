@@ -38,17 +38,17 @@ func (s *Server) Start(v service.Service) error {
 	s.logInfo("Service starting")
 	app, err := os.Executable()
 	if err != nil {
-		s.logError("Error getting current executable directory.", err.Error())
+		s.logError("Error getting current executable directory. ", err.Error())
 	} else {
 		wd, err := os.Getwd()
 		if err != nil {
-			s.logError("Error getting current working directory.", err.Error())
+			s.logError("Error getting current working directory. ", err.Error())
 		} else {
 			ad := filepath.Dir(app)
 			s.logInfo("Current application path is ", ad)
 			if ad != wd {
 				if err := os.Chdir(ad); err != nil {
-					s.logError("Error changing working directory.", err.Error())
+					s.logError("Error changing working directory. ", err.Error())
 				}
 			}
 		}
@@ -138,7 +138,7 @@ func (s *Server) run() {
 
 	// Start the web server
 	go func() {
-		s.logInfo("Server listening on port", s.PortNo)
+		s.logInfo("Server listening on port ", s.PortNo)
 		if err := s.http.ListenAndServe(); err != nil {
 			msg := err.Error()
 			if !strings.Contains(msg, "http: Server closed") {
@@ -217,7 +217,7 @@ func (s *Server) RegisterService() {
 		s.logDebug("Reg: Finding devices")
 		_, err = s.Finder.FindDevices()
 		if err != nil {
-			s.logError("RegisterService: Error getting list of devices.", err.Error())
+			s.logError("RegisterService: Error getting list of devices. ", err.Error())
 		} else {
 			if len(s.Finder.Devices) == 0 {
 				s.logDebug("RegisterService: Sleeping")

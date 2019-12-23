@@ -18,7 +18,7 @@ type Thingspeak struct {
 // and send the measurements to Thingspeak
 func (t *Thingspeak) Run() {
 	if err := t.Srv.RoomService.UpdateTelemetry(); err != nil {
-		t.logError("Error updating telemetry", err.Error())
+		t.logError("Error updating telemetry. ", err.Error())
 	}
 
 	uploadThingspeak := true
@@ -70,10 +70,10 @@ func (t *Thingspeak) Run() {
 			1,
 			t.Srv.Room.Temperature)
 		if resp, err := client.Get(url); err != nil {
-			t.logError("Error sending telemetry to Thingspeak.", err.Error())
+			t.logError("Error sending telemetry to Thingspeak. ", err.Error())
 		} else {
 			if resp.StatusCode != 200 {
-				t.logError("Error sending telemetry to Thingspeak. Status", resp.StatusCode, "returned.")
+				t.logError("Error sending telemetry to Thingspeak. Status ", resp.StatusCode, "returned.")
 			}
 		}
 

@@ -28,7 +28,7 @@ func (r *RoomService) OpenDoor(doorNo int) error {
 
 	out, err := exec.Command("python", "relay.py", strconv.Itoa(doorNo)).CombinedOutput()
 	if err != nil {
-		r.logError("Failed to open door", doorNo, err.Error())
+		r.logError("Failed to open door ", doorNo, ". ", err.Error())
 		msg := string(out)
 		return errors.New(msg)
 	}
@@ -76,7 +76,7 @@ func (r *RoomService) UpdateDoorStatus() error {
 	r.logInfo("Updating door status")
 	wd, err := os.Getwd()
 	if err != nil {
-		r.logError("Error getting current working directory.", err.Error())
+		r.logError("Error getting current working directory. ", err.Error())
 		return err
 	}
 	dp := path.Join(wd, "data")

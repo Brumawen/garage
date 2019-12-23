@@ -63,7 +63,7 @@ func (m *Mqtt) Initialize() error {
 		m.logInfo("Subscription complete.")
 	})
 	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
-		m.logInfo("Command received. ", msg.Topic(), string(msg.Payload()))
+		m.logInfo("Command received. ", msg.Topic(), " [", string(msg.Payload()), "]")
 		if m.ignoreCommands {
 			m.logInfo("Commands are currently being ignored")
 			return

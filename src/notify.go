@@ -35,7 +35,7 @@ func (n *NotifyService) Run() {
 			n.logDebug("Door1 is closed")
 			if n.WasDoor1Open {
 				if err := n.sendMessage(fmt.Sprintf("%s's door is now closed.", room.Door1Name)); err != nil {
-					n.logError("Error notifying that door 1 is now closed.", err.Error())
+					n.logError("Error notifying that door 1 is now closed. ", err.Error())
 				}
 				n.WasDoor1Open = false
 			}
@@ -44,7 +44,7 @@ func (n *NotifyService) Run() {
 			n.logDebug("Door 1 open for ", int(dur.Minutes()))
 			if dur.Minutes() >= float64(config.DoorAlarmPeriod) {
 				if err := n.sendMessage(fmt.Sprintf("%s's door has been open for %d minutes.", room.Door1Name, int(dur.Minutes()))); err != nil {
-					n.logError("Error notifying that door 1 is open.", err.Error())
+					n.logError("Error notifying that door 1 is open. ", err.Error())
 				}
 				n.WasDoor1Open = true
 			}
@@ -59,7 +59,7 @@ func (n *NotifyService) Run() {
 			n.logDebug("Door2 is closed")
 			if n.WasDoor2Open {
 				if err := n.sendMessage(fmt.Sprintf("%s's door is now closed.", room.Door2Name)); err != nil {
-					n.logError("Error notifying that door 2 is now closed.", err.Error())
+					n.logError("Error notifying that door 2 is now closed. ", err.Error())
 				}
 				n.WasDoor2Open = false
 			}
@@ -68,7 +68,7 @@ func (n *NotifyService) Run() {
 			n.logDebug("Door 2 open for ", int(dur.Minutes()))
 			if dur.Minutes() >= float64(config.DoorAlarmPeriod) {
 				if err := n.sendMessage(fmt.Sprintf("%s's door has been open for %d minutes.", room.Door2Name, int(dur.Minutes()))); err != nil {
-					n.logError("Error notifying that door 2 is open.", err.Error())
+					n.logError("Error notifying that door 2 is open. ", err.Error())
 				}
 				n.WasDoor2Open = true
 			}
