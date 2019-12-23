@@ -94,12 +94,12 @@ func (t *Thingspeak) Run() {
 
 // logInfo logs an information message to the logger
 func (t *Thingspeak) logInfo(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Info("Thingspeak: [Inf] ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Info("Thingspeak: [Inf] ", a)
 }
 
 // logError logs an error message to the logger
 func (t *Thingspeak) logError(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Error("Thingspeak [Err] ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Error("Thingspeak [Err] ", a)
 }

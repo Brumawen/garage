@@ -19,6 +19,8 @@ type Config struct {
 	MqttHost         string `json:"mqttHost"`         // MQTT Host
 	MqttUsername     string `json:"mqttUsername"`     // MQTT Username
 	MqttPassword     string `json:"mqttPassword"`     // MQTT password
+	EnableDoorAlarm  bool   `json:"enableDoorAlarm"`  // Enable Door Alarms
+	DoorAlarmPeriod  int    `json:"doorAlarmPeriod"`  // Max period of time (in minutes) a door can be open after which an alarm is sent every minute
 }
 
 // ReadFromFile will read the configuration settings from the specified file

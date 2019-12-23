@@ -28,7 +28,7 @@ func (r *RoomService) OpenDoor(doorNo int) error {
 
 	out, err := exec.Command("python", "relay.py", strconv.Itoa(doorNo)).CombinedOutput()
 	if err != nil {
-		r.logError("Failed to open door", doorNo, err.Error)
+		r.logError("Failed to open door", doorNo, err.Error())
 		msg := string(out)
 		return errors.New(msg)
 	}
@@ -81,27 +81,42 @@ func (r *RoomService) UpdateDoorStatus() error {
 	}
 	dp := path.Join(wd, "data")
 
+	// Get Door 1 State
 	if d1, err := r.readFileContents(path.Join(dp, "door1.state")); err != nil {
 		r.logError("Failed to read door1 state.", err)
 	} else {
 		r.logDebug("Read door1 state as", d1)
 		if strings.Contains(d1, "closed") {
-			r.Srv.Room.Door1Closed = true
+			if !r.Srv.Room.Door1Closed {
+				r.Srv.Room.Door1Closed = true
+				r.Srv.Room.Door1StatusTime = time.Now()
+			}
 			r.logDebug("Door1 is closed")
 		} else {
-			r.Srv.Room.Door1Closed = false
+			if r.Srv.Room.Door1Closed {
+				r.Srv.Room.Door1Closed = false
+				r.Srv.Room.Door1StatusTime = time.Now()
+			}
 			r.logDebug("Door1 is open")
 		}
 	}
+
+	// Get Door 2 State
 	if d2, err := r.readFileContents(path.Join(dp, "door2.state")); err != nil {
 		r.logError("Failed to read door2 state.", err)
 	} else {
 		r.logDebug("Read door2 state as", d2)
 		if strings.Contains(d2, "closed") {
-			r.Srv.Room.Door2Closed = true
+			if !r.Srv.Room.Door2Closed {
+				r.Srv.Room.Door2Closed = true
+				r.Srv.Room.Door2StatusTime = time.Now()
+			}
 			r.logDebug("Door2 is closed")
 		} else {
-			r.Srv.Room.Door2Closed = false
+			if r.Srv.Room.Door2Closed {
+				r.Srv.Room.Door2Closed = false
+				r.Srv.Room.Door2StatusTime = time.Now()
+			}
 			r.logDebug("Door2 is open")
 		}
 	}
@@ -125,19 +140,19 @@ func (r *RoomService) readFileContents(filePath string) (dir string, err error) 
 // logDebug logs a debug message to the logger
 func (r *RoomService) logDebug(v ...interface{}) {
 	if r.Srv.VerboseLogging {
-		a := fmt.Sprint(v)
-		logger.Info("Server: [Dbg] ", a[1:len(a)-1])
+		a := fmt.Sprint(v...)
+		logger.Info("Server: [Dbg] ", a)
 	}
 }
 
 // logInfo logs an information message to the logger
 func (r *RoomService) logInfo(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Info("RoomService: [Inf] ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Info("RoomService: [Inf] ", a)
 }
 
 // logError logs an error message to the logger
 func (r *RoomService) logError(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Error("Room [Err] ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Error("Room [Err] ", a)
 }

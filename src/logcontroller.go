@@ -37,6 +37,6 @@ func (c *LogController) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 
 // LogInfo is used to log information messages for this controller.
 func (c *LogController) LogInfo(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Info("LogController: ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Info("LogController: ", a)
 }

@@ -24,6 +24,7 @@ type Server struct {
 	MqttClient     *Mqtt                // MQTT client
 	Room           *Room                // Room information
 	RoomService    *RoomService         // Room service
+	NotifyService  NotifyService        // Notify service
 	exit           chan struct{}        // Exit flag
 	shutdown       chan struct{}        // Shutdown complete flag
 	http           *http.Server         // HTTP server
@@ -106,6 +107,8 @@ func (s *Server) run() {
 		s.MqttClient.Srv = s
 	}
 
+	s.NotifyService.Srv = s
+
 	s.logInfo("Configuration loaded successfully")
 
 	// Send initial telemetry
@@ -176,6 +179,7 @@ func (s *Server) startSchedule() {
 	}
 	s.cw = clockwerk.New()
 	s.cw.Every(time.Duration(s.Config.Period) * time.Minute).Do(&s.Uploader)
+	s.cw.Every(time.Duration(1) * time.Minute).Do(&s.NotifyService)
 
 	s.cw.Start()
 
@@ -242,19 +246,19 @@ func (s *Server) SendTelemetry() {
 // logDebug logs a debug message to the logger
 func (s *Server) logDebug(v ...interface{}) {
 	if s.VerboseLogging {
-		a := fmt.Sprint(v)
-		logger.Info("Server: [Dbg] ", a[1:len(a)-1])
+		a := fmt.Sprint(v...)
+		logger.Info("Server: [Dbg] ", a)
 	}
 }
 
 // logInfo logs an information message to the logger
 func (s *Server) logInfo(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Info("Server: [Inf] ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Info("Server: [Inf] ", a)
 }
 
 // logError logs an error message to the logger
 func (s *Server) logError(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Error("Server [Err] ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Error("Server [Err] ", a)
 }

@@ -30,7 +30,7 @@ func (c *RoomController) handleGetTelemetry(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "Error updating telemetry", http.StatusInternalServerError)
 	} else {
 		if err := c.Srv.Room.WriteTo(w); err != nil {
-			c.LogError("Error serializing telemetry.", err.Error)
+			c.LogError("Error serializing telemetry.", err.Error())
 			http.Error(w, "Error serializing telemetry", http.StatusInternalServerError)
 		}
 	}
@@ -68,12 +68,12 @@ func (c *RoomController) handleOpenDoor(w http.ResponseWriter, r *http.Request) 
 
 // LogInfo is used to log information messages for this controller.
 func (c *RoomController) LogInfo(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Info("RoomController: [Inf] ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Info("RoomController: [Inf] ", a)
 }
 
 // LogError is used to log information messages for this controller.
 func (c *RoomController) LogError(v ...interface{}) {
-	a := fmt.Sprint(v)
-	logger.Info("RoomController: [Err] ", a[1:len(a)-1])
+	a := fmt.Sprint(v...)
+	logger.Info("RoomController: [Err] ", a)
 }
