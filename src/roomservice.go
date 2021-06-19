@@ -26,7 +26,7 @@ func (r *RoomService) OpenDoor(doorNo int) error {
 		return err
 	}
 
-	out, err := exec.Command("python", "relay.py", strconv.Itoa(doorNo)).CombinedOutput()
+	out, err := exec.Command("python3", "relay.py", strconv.Itoa(doorNo)).CombinedOutput()
 	if err != nil {
 		r.logError("Failed to open door ", doorNo, ". ", err.Error())
 		msg := string(out)
